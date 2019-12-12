@@ -211,7 +211,7 @@ const MolArt = function(opts) {
     const globals = {
         lmCallbackRegistered: false
 
-        ,lm: LmController()
+        ,lm: new LmController()
         ,pv: PvController()
 
         ,settings: require('./settings')

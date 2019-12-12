@@ -15,71 +15,72 @@ function beautifyGroupName(name) {
     return capitalize(name).replace('_', ' ');
 }
 
-const LmController = function () {
-
-    const plugin = createPlugin();
-
-    class PdbRecordMapping {
-        constructor(){
-            this.pdbRecord = undefined;
-            this.modelId = undefined;
-            this.selectionId = undefined;
-            this.observedResidues = [];
-            this.userHighlightVisualIds = [];
-        }
-
-        setPdbRecord(pdbRecord) {
-            this.pdbRecord = pdbRecord;
-        }
-
-        getPdbRecord() {
-            return this.pdbRecord;
-        }
-
-        setModelId(modelId) {
-            this.modelId = modelId;
-        }
-
-        getModelId() {
-            return this.modelId;
-        }
-
-        setSelectionId(selectionId) {
-            this.selectionId = selectionId;
-        }
-
-        getSelectionId() {
-            return this.selectionId;
-        }
-
-        setObservedResidues(observedResidues) {
-            this.observedResidues= observedResidues;
-        }
-
-        getObservedResidues() {
-            return this.observedResidues;
-        }
-
-        setUserHighlightVisualIds(userHighlightVisualIds) {
-            this.userHighlightVisualIds= userHighlightVisualIds;
-        }
-
-        getUserHighlightVisualIds() {
-            return this.userHighlightVisualIds;
-        }
+class PdbRecordMapping {
+    constructor(){
+        this.pdbRecord = undefined;
+        this.modelId = undefined;
+        this.selectionId = undefined;
+        this.observedResidues = [];
+        this.userHighlightVisualIds = [];
     }
 
-    let globals;
-    const mapping = {};
+    setPdbRecord(pdbRecord) {
+        this.pdbRecord = pdbRecord;
+    }
 
-    function setToArray(set) {
+    getPdbRecord() {
+        return this.pdbRecord;
+    }
+
+    setModelId(modelId) {
+        this.modelId = modelId;
+    }
+
+    getModelId() {
+        return this.modelId;
+    }
+
+    setSelectionId(selectionId) {
+        this.selectionId = selectionId;
+    }
+
+    getSelectionId() {
+        return this.selectionId;
+    }
+
+    setObservedResidues(observedResidues) {
+        this.observedResidues= observedResidues;
+    }
+
+    getObservedResidues() {
+        return this.observedResidues;
+    }
+
+    setUserHighlightVisualIds(userHighlightVisualIds) {
+        this.userHighlightVisualIds= userHighlightVisualIds;
+    }
+
+    getUserHighlightVisualIds() {
+        return this.userHighlightVisualIds;
+    }
+}
+
+class LmController {
+    
+    constructor() {
+        this.plugin = createPlugin();
+        this.globals = {};
+        this.mapping = {};
+    }
+
+    setToArray(set) {
         const array = [];
 
         set.forEach(v => array.push(v));
         return array;
     }
 
-    function uniquifyArray(arr) {
+    uniquifyArray(arr) {
         const newArr = [];
 
         arr.forEach(v => {
@@ -89,18 +90,18 @@ const LmController = function () {
         return newArr;
     }
 
-    function getPdbIds() {
+    getPdbIds() {
         // return [...new Set(globals.pdbRecords.map(rec=>rec.getPdbId()))];
         // return Array.from(new Set(globals.pdbRecords.map(rec=>rec.getPdbId())));
         // return setToArray(new Set(globals.pdbRecords.map(rec=>rec.getPdbId())));
-        return uniquifyArray(globals.pdbRecords.map(rec=>rec.getPdbId()));
+        return uniquifyArray(this.globals.pdbRecords.map(rec=>rec.getPdbId()));
     }
 
-    function getPdbChains(pdbId) {
+    getPdbChains(pdbId) {
         // return [... new Set(globals.pdbRecords.filter(rec => rec.getPdbId() === pdbId).map(rec => rec.getChainId()))];
         // return Array.from(new Set(globals.pdbRecords.filter(rec => rec.getPdbId() === pdbId).map(rec => rec.getChainId())));
         // return setToArray(new Set(globals.pdbRecords.filter(rec => rec.getPdbId() === pdbId).map(rec => rec.getChainId())));
-        return uniquifyArray(globals.pdbRecords.filter(rec => rec.getPdbId() === pdbId).map(rec => rec.getChainId()));
+        return uniquifyArray(this.globals.pdbRecords.filter(rec => rec.getPdbId() === pdbId).map(rec => rec.getChainId()));
     }
 
     /**
@@ -111,7 +112,7 @@ const LmController = function () {
      * if not, it will be the first item in the list of chains. That is used in situations when the
      * user selects PDB ID from the dropdown and not from ProtVista.
      */
-    function updateHeaderChainIds(val, text, selected) {
+    updateHeaderChainIds(val, text, selected) {
 
         const pdbId = (val === undefined ? getHeaderPdbId() : val);
         const pdbChainList = getHeaderPdbChainList();
@@ -127,7 +128,7 @@ const LmController = function () {
         // if (triggerChainListChange) pdbChainList.trigger('change');
     }
 
-    function populateHeaderPdbIds() {
+    populateHeaderPdbIds() {
 
         const pdbIdsList = getHeaderPdbIdList();
         // pdbIdsList.empty();
@@ -144,42 +145,42 @@ const LmController = function () {
         updateHeaderChainIds();
     }
 
-    function getHeaderPdbIdList() {
-        return globals.container.find('.lm-pdb-id-list');
+    getHeaderPdbIdList() {
+        return this.globals.container.find('.lm-pdb-id-list');
     }
 
-    function getHeaderPdbChainList() {
-        return globals.container.find('.lm-pdb-chain-list');
+    getHeaderPdbChainList() {
+        return this.globals.container.find('.lm-pdb-chain-list');
     }
 
-    function getHeaderUserHighlightsList() {
-        return globals.container.find('.user-highlights');
+    getHeaderUserHighlightsList() {
+        return this.globals.container.find('.user-highlights');
     }
 
-    function userHighlightSelected(i) {
+    userHighlightSelected(i) {
         return $(getHeaderUserHighlightsList().find('div.item')[i]).hasClass('selected');
     }
 
-    function getHeaderPdbId() {
+    getHeaderPdbId() {
         //For some reason, using get value closes the combo
         return getHeaderPdbIdList().find('.text').text();
     }
 
-    function getHeaderChainId() {
+    getHeaderChainId() {
         // return getHeaderPdbChainList().val();
         return getHeaderPdbChainList().dropdown('get value');
     }
 
-    function getHeaderLinkContainer() {
-        return globals.container.find('.pv3d-header-lm .pdb-link');
+    getHeaderLinkContainer() {
+        return this.globals.container.find('.pv3d-header-lm .pdb-link');
     }
 
-    function deactivateDropdownsEvents() {
+    deactivateDropdownsEvents() {
         getHeaderPdbIdList().dropdown('setting', 'onChange', function (value) {});
         getHeaderPdbChainList().dropdown('setting', 'onChange', function (value) {});
     }
 
-    function activateDropdownsEvents() {
+    activateDropdownsEvents() {
 
         getHeaderPdbIdList().dropdown('setting', 'onChange', function (val, text, selected) {
             updateHeaderChainIds(val, text, selected);
@@ -197,11 +198,11 @@ const LmController = function () {
         // });
     }
 
-    function updateHeader() {
-        if (globals.activeStructure.pdbId === getHeaderPdbId() && globals.activeStructure.chainId === getHeaderChainId()) return;
+    updateHeader() {
+        if (this.globals.activeStructure.pdbId === getHeaderPdbId() && globals.activeStructure.chainId === getHeaderChainId()) return;
 
         deactivateDropdownsEvents();
-        if (getHeaderPdbId() !== globals.activeStructure.pdbId) {
+        if (getHeaderPdbId() !== this.globals.activeStructure.pdbId) {
 
             // pdbChainListOnChange(false);
             updateHeaderPdbIdToActive();
@@ -216,46 +217,46 @@ const LmController = function () {
         // updateHeaderPdbChainToActive();
     }
 
-    function updateHeaderPdbIdToActive() {
+    updateHeaderPdbIdToActive() {
         // const list = getHeaderPdbIdList();
         // const opts = list.find('option').toArray().map(o => o.value);
         // list[0].selectedIndex = opts.indexOf(globals.activeStructure.pdbId);
-        getHeaderPdbIdList().dropdown('set selected', globals.activeStructure.pdbId);
+        getHeaderPdbIdList().dropdown('set selected', this.globals.activeStructure.pdbId);
     }
 
-    function updateHeaderPdbChainToActive() {
+    updateHeaderPdbChainToActive() {
         // const list = globals.container.find('.pv3d-header select.lm-pdb-chain-list');
         // const opts = list.find('option').toArray().map(o => o.value);
-        getHeaderPdbChainList().dropdown('set selected', globals.activeStructure.chainId);
+        getHeaderPdbChainList().dropdown('set selected', this.globals.activeStructure.chainId);
 
     }
 
-    function updateHeaderPdbLink() {
+    updateHeaderPdbLink() {
         const linkContainer = getHeaderLinkContainer();
 
         linkContainer.removeClass('pv3d-invisible');
-        const source = globals.activeStructure.record.getSource();
+        const source = this.globals.activeStructure.record.getSource();
         if (source === 'PDB'){
             linkContainer[0].childNodes[0].nodeValue = 'PDB: ';
-            linkContainer.attr('href', getPdbLink(globals.activeStructure.pdbId));
-            linkContainer.find('.detail').text(globals.activeStructure.pdbId);
+            linkContainer.attr('href', getPdbLink(this.globals.activeStructure.pdbId));
+            linkContainer.find('.detail').text(this.globals.activeStructure.pdbId);
         } else if (source === 'SMR') {
             linkContainer[0].childNodes[0].nodeValue = 'SMR: ';
-            linkContainer.attr('href', getSmrLink(globals.uniprotId));
-            linkContainer.find('.detail').text(`${globals.uniprotId} (${globals.activeStructure.pdbId})`);
+            linkContainer.attr('href', getSmrLink(this.globals.uniprotId));
+            linkContainer.find('.detail').text(`${this.globals.uniprotId} (${this.globals.activeStructure.pdbId})`);
         } else {
             throw Error('Unknown structure source');
         }
     }
 
-    function shiftActiveStructure(shift) {
+    shiftActiveStructure(shift) {
         const pdbId = getHeaderPdbId();
 
         const pdbIdItems = getHeaderPdbIdList().find('.item');
         let currentIx;
 
         for (let ix = 0; ix < pdbIdItems.length; ix++) {
-            if (globals.container.find(pdbIdItems[ix]).attr('data-value') === pdbId) {
+            if (this.globals.container.find(pdbIdItems[ix]).attr('data-value') === pdbId) {
                 currentIx = ix;
                 break;
             }
@@ -263,13 +264,13 @@ const LmController = function () {
         const newIx = currentIx + shift;
 
         if (newIx >= 0 && newIx < pdbIdItems.length) {
-            const newPdbId = globals.container.find(pdbIdItems[newIx]).attr('data-value');
+            const newPdbId = this.globals.container.find(pdbIdItems[newIx]).attr('data-value');
 
-            globals.activeStructure.set(newPdbId, getPdbChains(newPdbId)[0]);
+            this.globals.activeStructure.set(newPdbId, getPdbChains(newPdbId)[0]);
         }
     }
 
-    function pdbChainListOnChange(activate) {
+    pdbChainListOnChange(activate) {
         if (activate) {
             getHeaderPdbChainList().dropdown('setting', 'onChange', function (value) {
                 if (value) {
@@ -281,14 +282,14 @@ const LmController = function () {
         }
     }
 
-    function updateSurfaceTransparencyTitle(val){
-        globals.container.find('.transparency-slider').attr('title', `Surface transparency:  ${val}%`)
+    updateSurfaceTransparencyTitle(val){
+        this.globals.container.find('.transparency-slider').attr('title', `Surface transparency:  ${val}%`)
     }
 
-    function handleEvents() {
+    handleEvents() {
 
         const initialTransparency = 15;
-        globals.container.find('.transparency-slider').range({
+        this.globals.container.find('.transparency-slider').range({
             min: 0,
             max: 100,
             start: initialTransparency * 2, //for some reason the initial transparency got set to half of the required value
@@ -303,61 +304,61 @@ const LmController = function () {
         activateDropdownsEvents();
         // pdbChainListOnChange(true);
 
-        globals.container.find('.pv3d-header .shift-left').on('click', () => shiftActiveStructure(-1));
-        globals.container.find('.pv3d-header .shift-right').on('click', () => shiftActiveStructure(1));
+        this.globals.container.find('.pv3d-header .shift-left').on('click', () => shiftActiveStructure(-1));
+        this.globals.container.find('.pv3d-header .shift-right').on('click', () => shiftActiveStructure(1));
     }
 
 
-    function highlightCallBack(e) {
+    highlightCallBack(e) {
         if (e.data && e.data.residues.length > 0) {
-            globals.pv.highlightActivePosition(e.data.residues[0].seqNumber);
+            this.globals.pv.highlightActivePosition(e.data.residues[0].seqNumber);
         } else {
-            globals.pv.dehighlightActivePosition();
+            this.globals.pv.dehighlightActivePosition();
         }
     }
 
-    function registerCallbacksAndEvents() {
+    registerCallbacksAndEvents() {
         handleEvents();
         getPlugin().registerHighlightCallback(highlightCallBack);
     }
 
-    function updateActiveStructureFromHeader() {
+    updateActiveStructureFromHeader() {
         //TODO when loading the plugin, this is called multiple times which can cause the problems in getHeaderPdbId
-        globals.activeStructure.set(getHeaderPdbId(), getHeaderChainId());
+        this.globals.activeStructure.set(getHeaderPdbId(), getHeaderChainId());
     }
 
-    function getPdbLink(pdbId) {
+    getPdbLink(pdbId) {
         return 'https://www.ebi.ac.uk/pdbe/entry/pdb/' + pdbId;
     }
 
-    function getSmrLink(uniprotId, pdbId) {
+    getSmrLink(uniprotId, pdbId) {
         return 'https://swissmodel.expasy.org/repository/uniprot/' + uniprotId;
     }
 
-    function rgbFromString(color) {
+    rgbFromString(color) {
         const arr = color.split(/[(,)]/);
         return { r: arr[1], g: arr[2], b: arr[3] };
     }
 
-    function loadMolecule(rec, hideOthers) {
+    loadMolecule(rec, hideOthers) {
 
-        return plugin.loadMolecule(rec.getPdbId(), rec.getSource(), rec.getCoordinatesFile()).then(function (modelId) {
+        return this.plugin.loadMolecule(rec.getPdbId(), rec.getSource(), rec.getCoordinatesFile()).then(function (modelId) {
             mapping[rec.getId()].setPdbRecord(rec);
             mapping[rec.getId()].setModelId(modelId);
             // load molecule into the LM plugin, retrieve ID of the respective model and hide all other models
-            return hideOthers ? plugin.hideModelsExcept([modelId]) : Promise.resolve();
+            return hideOthers ? this.plugin.hideModelsExcept([modelId]) : Promise.resolve();
         });
     }
 
-    function createUniprotMappingGroup(rec) {
-        return plugin.createGroup(globals.settings.pvMappedStructuresCat.name, 'Uniprot mapping', mapping[rec.getId()].getModelId());
+    createUniprotMappingGroup(rec) {
+        return this.plugin.createGroup(this.globals.settings.pvMappedStructuresCat.name, 'Uniprot mapping', mapping[rec.getId()].getModelId());
     }
 
-    function createPdbSelections(rec, groupId) {
+    createPdbSelections(rec, groupId) {
         // create selection corresponding to the PDB record and create visual for it
         const selectionName = rec.getPdbId().toUpperCase() + ':' + rec.getChainId() + ' (' + rec.getPdbStart() + '-' + rec.getPdbEnd() + ')';
 
-        return plugin.createSelectionFromRange({
+        return this.plugin.createSelectionFromRange({
             rootId: groupId,
             name: selectionName,
             chainId: rec.getChainId(),
@@ -366,24 +367,24 @@ const LmController = function () {
             selectionId: `${groupId}_${selectionName}` });
     }
 
-    function  extractObservedResidues(rec){
+    extractObservedResidues(rec){
         const modelId = mapping[rec.getId()].getModelId();
         const chainId = rec.getChainId();
 
-        const isHets = plugin.getController().context.select(modelId)[0].props.model.data.residues.isHet;
-        const seqNumbers  = plugin.getController().context.select(modelId)[0].props.model.data.residues.seqNumber;
-        const asymIds  = plugin.getController().context.select(modelId)[0].props.model.data.residues.authAsymId;
+        const isHets = this.plugin.getController().context.select(modelId)[0].props.model.data.residues.isHet;
+        const seqNumbers  = this.plugin.getController().context.select(modelId)[0].props.model.data.residues.seqNumber;
+        const asymIds  = this.plugin.getController().context.select(modelId)[0].props.model.data.residues.authAsymId;
 
         rec.setObservedResidues(seqNumbers.filter((seqNumber, ix) => asymIds[ix] === chainId && !isHets[ix]));
     }
 
-    function loadRecord(rec, params = {focus: true, hideOthers: true}) {
+    loadRecord(rec, params = {focus: true, hideOthers: true}) {
 
         const recId = rec.getId();
 
         if (recId in mapping) {
-            if (params.focus) plugin.focusSelection(mapping[recId].getSelectionId());
-            if (params.hideOthers) plugin.hideModelsExcept([mapping[recId].getModelId()]).then(()=>setUserSelectionsVisibiliy(mapping[recId].getPdbRecord().getPdbId()));
+            if (params.focus) this.plugin.focusSelection(mapping[recId].getSelectionId());
+            if (params.hideOthers) this.plugin.hideModelsExcept([mapping[recId].getModelId()]).then(()=>setUserSelectionsVisibiliy(mapping[recId].getPdbRecord().getPdbId()));
             const observedResidues = rec.getObservedResidues();
             if (!observedResidues || observedResidues.length === 0) extractObservedResidues(rec);
             updateHeaderPdbLink();
@@ -397,7 +398,7 @@ const LmController = function () {
         // };
 
         let groupId, selectionId;
-        let extraHighlightsContent = globals.opts.extraHighlights ? globals.opts.extraHighlights.content : [];
+        let extraHighlightsContent = this.globals.opts.extraHighlights ? this.globals.opts.extraHighlights.content : [];
 
         return loadMolecule(rec, params.hideOthers)
             .then(() => {updateHeaderPdbLink(); return Promise.resolve();})
@@ -410,20 +411,20 @@ const LmController = function () {
             .then(_selectionId => {
 
                 selectionId = _selectionId;
-                if (plugin.getEntity(selectionId).length == 0){
+                if (this.plugin.getEntity(selectionId).length == 0){
                   throw Error('Invalid mapping (the structure file does not contain the selection)');
                 }
 
                 mapping[recId].setSelectionId(selectionId);
-                if (params.focus) plugin.focusSelection(selectionId);
-                return plugin.createVisual(selectionId);
+                if (params.focus) this.plugin.focusSelection(selectionId);
+                return this.plugin.createVisual(selectionId);
                 // return createVisualForSelection(rec, selectionId);
                 // focusAndColorPdb(rec, selectionId, color)
             }).then(() => {
 
                 // Create group covering all selections possibly specified by the user
 
-                return plugin.createGroup("Selections", 'Selections', selectionId)
+                return this.plugin.createGroup("Selections", 'Selections', selectionId)
 
             }).then((selectionsGroupId => {
 
@@ -431,7 +432,7 @@ const LmController = function () {
                 const promises = extraHighlightsContent
                     .map((h, i) => {
                     const selName = h.sequenceNumbers.join();
-                    return plugin.createSelectionFromList({
+                    return this.plugin.createSelectionFromList({
                         rootId: selectionsGroupId,
                         name: selName,
                         chainId: rec.getChainId(),
@@ -447,9 +448,9 @@ const LmController = function () {
 
                 const promises = selectionsIds.map( (id, i) => {
                     if (id !== undefined) {
-                        return plugin.createVisual(id,
+                        return this.plugin.createVisual(id,
                             params = {
-                                style: plugin.getStyleDefinition(
+                                style: this.plugin.getStyleDefinition(
                                     extraHighlightsContent[i].visual.type,
                                     extraHighlightsContent[i].visual.params,
                                     extraHighlightsContent[i].visual.color,
@@ -470,7 +471,7 @@ const LmController = function () {
                 mapping[recId].setUserHighlightVisualIds(visualIdsDef);
                 visualIds.forEach((id, i) => {
                     if (id === undefined) return;
-                     userHighlightSelected(i) || !globals.opts.extraHighlights.controlVisibility ? plugin.showEntity(id): plugin.hideEntity(id);
+                     userHighlightSelected(i) || !this.globals.opts.extraHighlights.controlVisibility ? this.plugin.showEntity(id): this.plugin.hideEntity(id);
                     if (extraHighlightsContent[i].visualIds === undefined) extraHighlightsContent[i].visualIds = [];
                     extraHighlightsContent[i].visualIds.push(id)
                 });
@@ -478,7 +479,7 @@ const LmController = function () {
 
     }
 
-    function mapFeatures(features, colors) {
+    mapFeatures(features, colors) {
 
         const modelIdSelections = {}; // mapping of features over all loaded chains
 
@@ -496,7 +497,7 @@ const LmController = function () {
             features.forEach((f, i) => {
                 let  begin = rec.mapPosUnpToPdb(f.begin);
                 let end = rec.mapPosUnpToPdb(f.end);
-                const boundaryOnly = globals.settings.boundaryFeatureTypes.indexOf(f.type) >= 0; // whether only begin and end residues should be selected
+                const boundaryOnly = this.globals.settings.boundaryFeatureTypes.indexOf(f.type) >= 0; // whether only begin and end residues should be selected
 
                 if ((boundaryOnly && (rec.isValidPdbPos(begin) || rec.isValidPdbPos(end))) ||
                     //(!boundaryOnly && rec.isValidPdbRegion(begin, end))
@@ -525,15 +526,15 @@ const LmController = function () {
             modelIdSelections[modelId] = modelIdSelections[modelId].concat(chainSelections);
         }
 
-        Object.keys(modelIdSelections).forEach(modelId => plugin.colorSelections(modelId, modelIdSelections[modelId], "user_selection_"));
+        Object.keys(modelIdSelections).forEach(modelId => this.plugin.colorSelections(modelId, modelIdSelections[modelId], "user_selection_"));
     }
 
-    function unmapFeature(feature) {
+    unmapFeature(feature) {
         plugin.resetVisuals("user_selection_");
     }
 
 
-    function setUserSelectionsVisibiliy(pdbId){
+    setUserSelectionsVisibiliy(pdbId){
 
         // const recordVisuals = recMapping ? recMapping.getUserHighlightVisualIds() : undefined;
         let recordVisuals = [];
@@ -544,15 +545,15 @@ const LmController = function () {
         }
 
         getHeaderUserHighlightsList().find('div.item').each(i => {
-            globals.opts.extraHighlights.content[i].visualIds.forEach((visualId) => {
+            this.globals.opts.extraHighlights.content[i].visualIds.forEach((visualId) => {
                 if (recordVisuals === undefined || recordVisuals.indexOf(visualId) >= 0) {
-                    userHighlightSelected(i) ? plugin.showEntity(visualId): plugin.hideEntity(visualId);
+                    userHighlightSelected(i) ? this.plugin.showEntity(visualId): this.plugin.hideEntity(visualId);
                 }
             })
         })
     }
 
-    function highlightUserSelection(i, on, pdbId) {
+    highlightUserSelection(i, on, pdbId) {
         //i is the index of user selection in globals.opts.extraHighlights.content
         let recordVisuals = [];
         for (const id in mapping) {
@@ -561,16 +562,16 @@ const LmController = function () {
             }
         }
 
-        globals.opts.extraHighlights.content[i].visualIds.forEach(visualId => {
+        this.globals.opts.extraHighlights.content[i].visualIds.forEach(visualId => {
             if (recordVisuals.indexOf(visualId) >= 0) {
-                on ? plugin.showEntity(visualId) : plugin.hideEntity(visualId);
+                on ? this.plugin.showEntity(visualId) : this.plugin.hideEntity(visualId);
             }
         });
 
     }
 
     let lastHighlighted = -1;
-    function highlightResidue(resNum) {
+    highlightResidue(resNum) {
 
         // The following test had to be commented out since when moving across categories the dehighlightAll is called and
         // then when entering another category at the same position, the active residue would remain dehighlighted
@@ -584,55 +585,55 @@ const LmController = function () {
                 const pdbRec = mapping[id].getPdbRecord();
 
                 if (pdbRec.isInObservedRanges(resNum)) {
-                    plugin.highlightResidue(mapping[id].getModelId(), pdbRec.getChainId(), pdbRec.mapPosUnpToPdb(resNum));
+                    this.plugin.highlightResidue(mapping[id].getModelId(), pdbRec.getChainId(), pdbRec.mapPosUnpToPdb(resNum));
                 }
 
                 // const pdbPos = pdbRec.mapPosUnpToPdb(resNum);
                 //
                 // if (pdbRec.isValidPdbPos(pdbPos)) {
-                //     plugin.highlightResidue(mapping[id].getModelId(), pdbRec.getChainId(), pdbPos);
+                //     this.plugin.highlightResidue(mapping[id].getModelId(), pdbRec.getChainId(), pdbPos);
                 // }
             }
         }
     }
 
-    function dehighlightAll() {
-        plugin.dehighlightAll();
+    dehighlightAll() {
+        this.plugin.dehighlightAll();
     }
 
-    function getPlugin() {
-        return plugin;
+    getPlugin() {
+        return this.plugin;
     }
 
-    function moleculeLoaded() {
-        return plugin.moleculeLoaded();
+    moleculeLoaded() {
+        return this.plugin.moleculeLoaded();
     }
 
-    function setSurfaceTransparency(val) {
-        return plugin.setSurfaceTransparency(val, 'user_selection_');
+    setSurfaceTransparency(val) {
+        return this.plugin.setSurfaceTransparency(val, 'user_selection_');
     }
 
-    function showErrorMessage(message) {
+    showErrorMessage(message) {
 
-        globals.lmErrorMessageContainer.find('.error-message')[0].innerHTML = message;
-        globals.lmErrorMessageContainer.css('display', 'block');
+        this.globals.lmErrorMessageContainer.find('.error-message')[0].innerHTML = message;
+        this.globals.lmErrorMessageContainer.css('display', 'block');
     }
 
-    function hideErrorMessage() {
-        globals.lmErrorMessageContainer.css('display', 'none');
+    hideErrorMessage() {
+        this.globals.lmErrorMessageContainer.css('display', 'none');
     }
 
-    function initalizeUserHighlights() {
+    initalizeUserHighlights() {
         let $userHighlihts = getHeaderUserHighlightsList();
-        if (globals.opts.extraHighlights && globals.opts.extraHighlights.content.length > 0 && globals.opts.extraHighlights.controlVisibility) {
+        if (this.globals.opts.extraHighlights && this.globals.opts.extraHighlights.content.length > 0 && this.globals.opts.extraHighlights.controlVisibility) {
 
             const ddContent = [];
-            globals.opts.extraHighlights.content.forEach((eh, i) => {
+            this.globals.opts.extraHighlights.content.forEach((eh, i) => {
                 ddContent.push({name: eh.label, value: i});
             });
 
             $userHighlihts.dropdown({
-                placeholder: globals.opts.extraHighlights.label,
+                placeholder: this.globals.opts.extraHighlights.label,
                 values: ddContent,
                 action: 'hide',
                 onChange: (val, text, $selected) => {
@@ -640,11 +641,11 @@ const LmController = function () {
                     if ($selected == undefined) return;
 
                     $selected.toggleClass('selected');
-                    highlightUserSelection(val, $selected.hasClass('selected'), globals.activeStructure.pdbId);
+                    highlightUserSelection(val, $selected.hasClass('selected'), this.globals.activeStructure.pdbId);
                 }
             });
             $userHighlihts.find('div.item').each((i, el) => {
-                if (globals.opts.extraHighlights.content[i].showOnStart) {
+                if (this.globals.opts.extraHighlights.content[i].showOnStart) {
                     $(el).addClass('selected');
                 }
             })
@@ -655,66 +656,32 @@ const LmController = function () {
     }
 
 
-    function getAuthSeqNumber(rec, resNum) {
+    getAuthSeqNumber(rec, resNum) {
         // returns https://webchemdev.ncbr.muni.cz/LiteMol/SourceDocs/interfaces/litemol.core.structure.residue.html
         let modelId = mapping[rec.getId()].getModelId();
-        return plugin.getAuthSeqNumber(modelId, rec.getChainId(), resNum);
+        return this.plugin.getAuthSeqNumber(modelId, rec.getChainId(), resNum);
     }
 
-    function getAuthSeqNumberRange(rec, resNumBegin, resNumEnd) {
+    getAuthSeqNumberRange(rec, resNumBegin, resNumEnd) {
         let modelId = mapping[rec.getId()].getModelId();
-        return plugin.getAuthSeqNumberRange(modelId, rec.getChainId(), resNumBegin, resNumEnd);
+        return this.plugin.getAuthSeqNumberRange(modelId, rec.getChainId(), resNumBegin, resNumEnd);
 
     }
 
-    function initialize(params) {
-        globals = params.globals;
-        plugin.initializePlugin(globals.lmContainerId);
+    initialize(params) {
+        this.globals = params.globals;
+        this.plugin.initializePlugin(this.globals.lmContainerId);
 
         initalizeUserHighlights();
 
-        if ('pdbRecords' in globals) populateHeaderPdbIds();
+        if ('pdbRecords' in this.globals) populateHeaderPdbIds();
         registerCallbacksAndEvents();
     }
 
-    function destroy(){
-        plugin.destroyPlugin();
+    destroy(){
+        this.plugin.destroyPlugin();
     }
-
-    return {
-        initialize: initialize,
-        destroy: destroy,
-        loadRecord: loadRecord,
-        mapFeatures: mapFeatures,
-        unmapFeature: unmapFeature,
-        getPlugin: getPlugin,
-        highlightResidue: highlightResidue,
-        dehighlightAll: dehighlightAll,
-        // ,registerHighlightCallback: registerHighlightCallback
-        moleculeLoaded: moleculeLoaded,
-        setSurfaceTransparency: setSurfaceTransparency,
-        populateHeaderPdbIds: populateHeaderPdbIds,
-        updateHeader: updateHeader,
-        // ,handleHeaderEvents: handleHeaderEvents
-        registerCallbacksAndEvents: registerCallbacksAndEvents,
-        // ,setActiveStructureFromHeader: setActiveStructureFromHeader
-        // showRecord: showRecord,
-        // createSelectionWithVisual: createSelectionWithVisual,
-        // focusRecord: focusRecord
-        showErrorMessage: showErrorMessage,
-        hideErrorMessage: hideErrorMessage,
-
-        getAuthSeqNumber: getAuthSeqNumber,
-        getAuthSeqNumberRange: getAuthSeqNumberRange,
-
-        // Exposed for testing purposes
-        getHeaderPdbId: getHeaderPdbId,
-        getHeaderChainId: getHeaderChainId,
-        getHeaderPdbIdList: getHeaderPdbIdList,
-        getHeaderPdbChainList: getHeaderPdbChainList,
-        getHeaderLinkContainer: getHeaderLinkContainer,
-        highlightCallback: highlightCallBack
-    };
-};
+    
+}
 
 module.exports = LmController;
